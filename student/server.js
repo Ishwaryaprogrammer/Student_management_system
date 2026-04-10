@@ -1,11 +1,15 @@
 const express = require("express");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://127.0.0.1:27017/studentDB");
+// ✅ CONNECT TO ATLAS
+mongoose.connect(process.env.MONGO_URI)
+.then(()=>console.log("MongoDB Connected"))
+.catch(err=>console.log(err));
 
 // MODEL
 const schema = new mongoose.Schema({
@@ -17,7 +21,7 @@ const schema = new mongoose.Schema({
 
 const Model = mongoose.model("Student", schema);
 
-// SERVICE
+// SERVICE (OOP)
 class Service{
 
 async create(data){
@@ -113,4 +117,6 @@ app.delete("/api/students/:id", async (req,res)=>{
     res.json(await service.delete(req.params.id));
 });
 
-app.listen(3000,()=>console.log("Running"));
+// ✅ PORT FIX FOR DEPLOYMENT
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, ()=>console.log("Running on", PORT));
