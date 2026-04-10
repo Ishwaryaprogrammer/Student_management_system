@@ -37,12 +37,24 @@ async function login(){
 
 // LOAD
 async function load(){
-    const res=await fetch(`${API}/students?page=${page}&sort=${sort}&search=${searchText}`);
-    const r=await res.json();
+    const res = await fetch(`${API}/students?page=${page}&sort=${sort}&search=${searchText}`);
+    const r = await res.json();
 
-    count.innerText=r.count;
+    // ❌ if error
+    if(!res.ok){
+        toastMsg(r.msg || "Server error",1);
+        return;
+    }
 
-    tb.innerHTML=r.data.map(s=>`
+    // safety check
+    if(!r.data){
+        toastMsg("No data received",1);
+        return;
+    }
+
+    count.innerText = r.count || 0;
+
+    tb.innerHTML = r.data.map(s=>`
         <tr>
         <td>${s.name}</td>
         <td>${s.age}</td>
@@ -55,7 +67,6 @@ async function load(){
         </tr>
     `).join("");
 }
-
 // SAVE
 async function save(){
 
