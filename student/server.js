@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-// ✅ CONNECT TO MONGODB ATLAS (FIXED WITH DB NAME)
+// ✅ MongoDB Atlas (with DB name)
 mongoose.connect("mongodb+srv://ishwaryasuresh2004_db_user:HFMkXVuwPoT7qeBl@cluster0.03rbkom.mongodb.net/studentDB?retryWrites=true&w=majority")
 .then(()=>console.log("MongoDB Connected"))
 .catch(err=>console.log("Mongo Error:", err));
@@ -20,7 +20,7 @@ const schema = new mongoose.Schema({
 
 const Model = mongoose.model("Student", schema);
 
-// SERVICE (OOP)
+// SERVICE
 class Service{
 
 async create(data){
@@ -87,15 +87,25 @@ app.post("/api/login",(req,res)=>{
     else res.status(401).json({msg:"Invalid"});
 });
 
-// ✅ ROUTES WITH ERROR HANDLING (IMPORTANT FIX)
+// ✅ FIXED ROUTES (SAFE JSON ALWAYS)
 
 // GET ALL
 app.get("/api/students", async (req,res)=>{
     try{
-        const data = await service.getAll(req.query);
-        res.json(data);
+        const result = await service.getAll(req.query);
+
+        res.json({
+            data: result.data || [],
+            count: result.count || 0
+        });
+
     }catch(e){
-        res.status(500).json({msg:"Server Error", error:e.toString()});
+        console.log("ERROR:", e);
+        res.status(500).json({
+            data: [],
+            count: 0,
+            msg: "Server Error"
+        });
     }
 });
 
@@ -135,6 +145,6 @@ app.delete("/api/students/:id", async (req,res)=>{
     }
 });
 
-// ✅ PORT FIX
+// PORT
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, ()=>console.log("Running on", PORT));
