@@ -1,15 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
-require("dotenv").config();
 
 const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-// ✅ CONNECT TO ATLAS
-mongoose.connect(process.env.MONGO_URI)
+// ✅ CONNECT TO MONGODB ATLAS (FIXED WITH DB NAME)
+mongoose.connect("mongodb+srv://ishwaryasuresh2004_db_user:HFMkXVuwPoT7qeBl@cluster0.03rbkom.mongodb.net/studentDB?retryWrites=true&w=majority")
 .then(()=>console.log("MongoDB Connected"))
-.catch(err=>console.log(err));
+.catch(err=>console.log("Mongo Error:", err));
 
 // MODEL
 const schema = new mongoose.Schema({
@@ -88,15 +87,28 @@ app.post("/api/login",(req,res)=>{
     else res.status(401).json({msg:"Invalid"});
 });
 
-// ROUTES
+// ✅ ROUTES WITH ERROR HANDLING (IMPORTANT FIX)
+
+// GET ALL
 app.get("/api/students", async (req,res)=>{
-    res.json(await service.getAll(req.query));
+    try{
+        const data = await service.getAll(req.query);
+        res.json(data);
+    }catch(e){
+        res.status(500).json({msg:"Server Error", error:e.toString()});
+    }
 });
 
+// GET ONE
 app.get("/api/students/:id", async (req,res)=>{
-    res.json(await service.get(req.params.id));
+    try{
+        res.json(await service.get(req.params.id));
+    }catch(e){
+        res.status(500).json({msg:e.toString()});
+    }
 });
 
+// CREATE
 app.post("/api/students", async (req,res)=>{
     try{
         res.json(await service.create(req.body));
@@ -105,6 +117,7 @@ app.post("/api/students", async (req,res)=>{
     }
 });
 
+// UPDATE
 app.put("/api/students/:id", async (req,res)=>{
     try{
         res.json(await service.update(req.params.id,req.body));
@@ -113,10 +126,15 @@ app.put("/api/students/:id", async (req,res)=>{
     }
 });
 
+// DELETE
 app.delete("/api/students/:id", async (req,res)=>{
-    res.json(await service.delete(req.params.id));
+    try{
+        res.json(await service.delete(req.params.id));
+    }catch(e){
+        res.status(500).json({msg:e.toString()});
+    }
 });
 
-// ✅ PORT FIX FOR DEPLOYMENT
+// ✅ PORT FIX
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, ()=>console.log("Running on", PORT));
